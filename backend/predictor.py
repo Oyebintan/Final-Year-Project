@@ -1,67 +1,100 @@
-import os
+from __future__ import annotations
+
 import re
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict
+
 import joblib
 import numpy as np
-from tensorflow import keras
-
-BASE_DIR = os.path.dirname(__file__)
-ARTIFACT_DIR = os.path.join(BASE_DIR, "artifacts")
-
-VECTORIZER_PATH = os.path.join(ARTIFACT_DIR, "vectorizer.joblib")
-FEATURE_MASK_PATH = os.path.join(ARTIFACT_DIR, "feature_mask.npy")
-SVD_PATH = os.path.join(ARTIFACT_DIR, "svd.joblib")
-MODEL_PATH = os.path.join(ARTIFACT_DIR, "model.keras")
 
 
-def clean_text(s: str) -> str:
-    s = str(s).lower()
-    s = s.replace("\n", " ").replace("\r", " ")
-
-    # normalize repeats of escapenumber -> <NUM>
-    s = re.sub(r"\b(?:escapenumber\b(?:\s+|$))+",
-               " <NUM> ",
-               s)
-
-    # normalize actual numbers -> <NUM>
-    s = re.sub(r"\b\d+\b", " <NUM> ", s)
-
-    s = re.sub(r"\s+", " ", s).strip()
-    return s
+@dataclass
+class InferenceArtifacts:
+    vectorizer: Any
+    feature_mask: np.ndarray
+    svd: Any
+    model: Any
+    artifact_dir: Path
 
 
 class SpamPredictor:
-    def __init__(self):
-        self.vectorizer = None
-        self.feature_mask = None
-        self.svd = None
-        self.model = None
+    def __init__(self) -> None:
+        self.art = self._load_artifacts()
 
-    def load(self):
-        required = [VECTORIZER_PATH, FEATURE_MASK_PATH, SVD_PATH, MODEL_PATH]
-        missing = [p for p in required if not os.path.exists(p)]
-        if missing:
-            raise FileNotFoundError(
-                "Missing model artifacts. Train first (python backend/train.py).\nMissing:\n"
-                + "\n".join(missing)
+    def predict(self, text: str) -> Dict[str, Any]:
+        text = self._normalize_input(text)
+
+        if not text:
+            return {
+                "label": "ham",
+                "probability": 0.0,
+                "confidence": 0.0,
+            }
+
+        X = self.art.vectorizer.transform([text])
+
+        mask = self.art.feature_mask
+        if mask.dtype != bool:
+            mask = mask.astype(bool)
+
+        if mask.shape[0] != X.shape[1]:
+            raise ValueError(
+                f"Feature mask length ({mask.shape[0]}) does not match "
+                f"TF-IDF feature size ({X.shape[1]})."
             )
 
-        self.vectorizer = joblib.load(VECTORIZER_PATH)
-        self.feature_mask = np.load(FEATURE_MASK_PATH)
-        self.svd = joblib.load(SVD_PATH)
-        self.model = keras.models.load_model(MODEL_PATH)
+        X_fs = X[:, mask]
+        X_dense = self.art.svd.transform(X_fs).astype(np.float32)
 
-    def predict_proba(self, text: str) -> float:
-        if self.model is None:
-            self.load()
+        if hasattr(self.art.model, "predict_proba"):
+            proba_spam = float(self.art.model.predict_proba(X_dense)[0, 1])
+        else:
+            pred = self.art.model.predict(X_dense)
+            proba_spam = float(pred[0])
 
-        text = clean_text(text)
-        X = self.vectorizer.transform([text])          # sparse
-        X_fs = X[:, self.feature_mask]                 # sparse
-        X_dense = self.svd.transform(X_fs)             # dense
-        p_spam = float(self.model.predict(X_dense, verbose=0).ravel()[0])
-        return p_spam
+        proba_spam = max(0.0, min(1.0, proba_spam))
+        label = "spam" if proba_spam >= 0.5 else "ham"
+        confidence = proba_spam if label == "spam" else (1.0 - proba_spam)
 
-    def predict(self, text: str):
-        p = self.predict_proba(text)
-        label = 1 if p >= 0.5 else 0
-        return label, p
+        return {
+            "label": label,
+            "probability": round(proba_spam, 6),
+            "confidence": round(confidence * 100, 2),
+        }
+
+    def _normalize_input(self, text: str) -> str:
+        text = str(text or "").lower()
+        text = text.replace("\n", " ").replace("\r", " ")
+        text = re.sub(r"\b\d+\b", " <NUM> ", text)
+        text = re.sub(r"\s+", " ", text).strip()
+        return text
+
+    def _load_artifacts(self) -> InferenceArtifacts:
+        base_dir = Path(__file__).resolve().parent
+        artifact_dir = base_dir / "model"
+
+        vectorizer_path = artifact_dir / "vectorizer.joblib"
+        mask_path = artifact_dir / "feature_mask.npy"
+        svd_path = artifact_dir / "svd.joblib"
+        model_path = artifact_dir / "classifier.joblib"
+
+        required_files = [vectorizer_path, mask_path, svd_path, model_path]
+        missing_files = [str(path) for path in required_files if not path.exists()]
+        if missing_files:
+            raise FileNotFoundError(
+                "Missing required model artifact(s): " + ", ".join(missing_files)
+            )
+
+        vectorizer = joblib.load(vectorizer_path)
+        feature_mask = np.load(mask_path, allow_pickle=False)
+        svd = joblib.load(svd_path)
+        model = joblib.load(model_path)
+
+        return InferenceArtifacts(
+            vectorizer=vectorizer,
+            feature_mask=feature_mask,
+            svd=svd,
+            model=model,
+            artifact_dir=artifact_dir,
+        )

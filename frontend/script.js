@@ -1,4 +1,7 @@
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE =
+  window.location.protocol === "file:"
+    ? "http://127.0.0.1:8000"
+    : `${window.location.origin}`;
 
 const emailText = document.getElementById("emailText");
 const btnCheck = document.getElementById("btnCheck");
@@ -24,17 +27,15 @@ function resetResultUI() {
   confBar.style.backgroundColor = "#AB0B4B";
 }
 
-function setResult(label, spamProb) {
-  const pct = Math.round(spamProb * 10000) / 100; // 2dp
-  const isSpam = label.toLowerCase() === "spam";
+function setResult(label, spamProb, confidence) {
+  const spamPct = Math.round(spamProb * 10000) / 100;
+  const confPct = typeof confidence === "number" ? confidence : spamPct;
+  const isSpam = String(label).toLowerCase() === "spam";
 
-  resultLine.innerHTML = `Result: <strong>${label.toUpperCase()}</strong> — ${pct}% spam confidence`;
-
-  // Green for HAM, Red/Wine for SPAM
+  resultLine.innerHTML = `Result: <strong>${String(label).toUpperCase()}</strong> — ${confPct}% confidence`;
   resultLine.style.color = isSpam ? "#AB0B4B" : "#2ecc71";
   confBar.style.backgroundColor = isSpam ? "#AB0B4B" : "#2ecc71";
-
-  confBar.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+  confBar.style.width = `${Math.max(0, Math.min(100, confPct))}%`;
 }
 
 async function fetchSample(type) {
@@ -55,7 +56,7 @@ async function fetchSample(type) {
     emailText.value = data.text || "";
     resetResultUI();
   } catch (e) {
-    setError("Backend not reachable. Start it on http://127.0.0.1:8000");
+    setError("Backend not reachable.");
   } finally {
     setLoading(btnHam, false, "", "Random HAM");
     setLoading(btnSpam, false, "", "Random SPAM");
@@ -68,23 +69,36 @@ btnSpam.addEventListener("click", () => fetchSample("spam"));
 btnCheck.addEventListener("click", async () => {
   setError("");
   const text = (emailText.value || "").trim();
-  if (!text) return setError("Paste an email first.");
+
+  if (!text) {
+    setError("Paste an email first.");
+    return;
+  }
 
   setLoading(btnCheck, true, "Checking...", "Check");
 
   try {
     const res = await fetch(`${API_BASE}/predict`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({ text })
     });
 
     const data = await res.json();
-    if (!res.ok) return setError(data.error || "Prediction failed.");
 
-    setResult(data.label, data.spam_probability);
+    if (!res.ok) {
+      setError(data.error || "Prediction failed.");
+      return;
+    }
+
+    const spamProbability = Number(data.spam_probability ?? data.probability ?? 0);
+    const confidence = Number(data.confidence ?? 0);
+
+    setResult(data.label, spamProbability, confidence);
   } catch (e) {
-    setError("Backend not reachable. Start it on http://127.0.0.1:8000");
+    setError("Backend not reachable.");
   } finally {
     setLoading(btnCheck, false, "", "Check");
   }

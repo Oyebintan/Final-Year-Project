@@ -1,5 +1,40 @@
+# Virtual Environment
 venv/
+.venv/
+env/
+
+# Python cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# OS files
 .DS_Store
-backend/spam.csv
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Jupyter (if used)
+.ipynb_checkpoints/
+
+# Environment variables
+.env
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+
+# Testing / temp files
+*.tmp
+
+# Baseline results (not needed in deployment)
+backend/baseline_results/
+
+# Optional: ignore training outputs (ONLY if not needed)
+backend/training_output.txt
