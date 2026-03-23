@@ -1,6 +1,8 @@
 import os
+import random
 from pathlib import Path
 
+import pandas as pd
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
@@ -26,6 +28,26 @@ def get_predictor() -> SpamPredictor:
     return _predictor
 
 
+def get_sample_from_csv(label: str, max_rows: int = 2000) -> str:
+    if not DATA_PATH.exists():
+        return ""
+
+    try:
+        df = pd.read_csv(DATA_PATH, nrows=max_rows)
+        df = df.dropna(subset=["label", "text"]).copy()
+        df["label"] = df["label"].astype(int)
+
+        target = 1 if label == "spam" else 0
+        samples = df[df["label"] == target]["text"].astype(str).tolist()
+
+        if not samples:
+            return ""
+
+        return random.choice(samples)
+    except Exception:
+        return ""
+
+
 @app.get("/")
 def home():
     return jsonify(
@@ -34,6 +56,8 @@ def home():
             "endpoints": {
                 "health": "/health",
                 "predict": "/predict",
+                "sample_ham": "/sample?label=ham",
+                "sample_spam": "/sample?label=spam",
             },
         }
     )
@@ -55,6 +79,7 @@ def health():
                 "status": "ok",
                 "service": "email-spam-classifier",
                 "predictor_ready": predictor_ready,
+                "dataset_ready": DATA_PATH.exists(),
             }
         )
     except Exception as exc:
@@ -84,6 +109,24 @@ def predict():
                 "confidence": confidence,
             }
         )
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 500
+
+
+@app.get("/sample")
+def sample():
+    try:
+        label = str(request.args.get("label") or "").strip().lower()
+
+        if label not in ("ham", "spam"):
+            return jsonify({"error": "Use /sample?label=ham or /sample?label=spam"}), 400
+
+        text = get_sample_from_csv(label, max_rows=2000)
+
+        if not text:
+            return jsonify({"error": "Sample not available"}), 500
+
+        return jsonify({"label": label, "text": text})
     except Exception as exc:
         return jsonify({"error": str(exc)}), 500
 
