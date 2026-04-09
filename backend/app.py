@@ -90,20 +90,24 @@ def health():
 def predict():
     try:
         payload = request.get_json(silent=True) or {}
-        text = str(payload.get("text") or "").strip()
+
+        # accept either "text" or "email"
+        text = str(payload.get("text") or payload.get("email") or "").strip()
 
         if not text:
-            return jsonify({"error": "Field 'text' is required."}), 400
+            return jsonify({"error": "Field 'text' or 'email' is required."}), 400
 
         result = get_predictor().predict(text)
+
+        label = str(result.get("label", "ham"))
         probability = float(result.get("probability", 0.0))
-        label = result.get("label", "ham")
         confidence = float(result.get("confidence", 0.0))
 
         return jsonify(
             {
-                "label": label,
-                "probability": probability,
+                "prediction": label,           # frontend-friendly
+                "label": label,                # backend-friendly
+                "probability": probability,    # probability of spam
                 "spam_probability": probability,
                 "ham_probability": round(1.0 - probability, 6),
                 "confidence": confidence,

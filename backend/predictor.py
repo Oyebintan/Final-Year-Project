@@ -7,20 +7,21 @@ from typing import Any, Dict
 
 import joblib
 import numpy as np
+import tensorflow as tf
 
 
 @dataclass
 class InferenceArtifacts:
-    vectorizer: Any
-    feature_mask: np.ndarray
-    svd: Any
-    model: Any
+    feature_pipeline: Any
+    l1_selector: Any
+    label_encoder: Any
+    model: tf.keras.Model
     artifact_dir: Path
 
 
 class SpamPredictor:
-    def __init__(self) -> None:
-        self.art = self._load_artifacts()
+    def __init__(self, artifact_dir: str | None = None) -> None:
+        self.art = self._load_artifacts(artifact_dir)
 
     def predict(self, text: str) -> Dict[str, Any]:
         text = self._normalize_input(text)
@@ -32,28 +33,19 @@ class SpamPredictor:
                 "confidence": 0.0,
             }
 
-        X = self.art.vectorizer.transform([text])
+        # same preprocessing pipeline used during training
+        x = self.art.feature_pipeline.transform([text])
 
-        mask = self.art.feature_mask
-        if mask.dtype != bool:
-            mask = mask.astype(bool)
-
-        if mask.shape[0] != X.shape[1]:
-            raise ValueError(
-                f"Feature mask length ({mask.shape[0]}) does not match "
-                f"TF-IDF feature size ({X.shape[1]})."
-            )
-
-        X_fs = X[:, mask]
-        X_dense = self.art.svd.transform(X_fs).astype(np.float32)
-
-        if hasattr(self.art.model, "predict_proba"):
-            proba_spam = float(self.art.model.predict_proba(X_dense)[0, 1])
+        if hasattr(x, "toarray"):
+            x = x.toarray().astype(np.float32)
         else:
-            pred = self.art.model.predict(X_dense)
-            proba_spam = float(pred[0])
+            x = np.asarray(x, dtype=np.float32)
 
+        x_selected = self.art.l1_selector.transform(x).astype(np.float32)
+
+        proba_spam = float(self.art.model.predict(x_selected, verbose=0).ravel()[0])
         proba_spam = max(0.0, min(1.0, proba_spam))
+
         label = "spam" if proba_spam >= 0.5 else "ham"
         confidence = proba_spam if label == "spam" else (1.0 - proba_spam)
 
@@ -64,37 +56,41 @@ class SpamPredictor:
         }
 
     def _normalize_input(self, text: str) -> str:
-        text = str(text or "").lower()
+        text = str(text or "")
         text = text.replace("\n", " ").replace("\r", " ")
-        text = re.sub(r"\b\d+\b", " <NUM> ", text)
         text = re.sub(r"\s+", " ", text).strip()
         return text
 
-    def _load_artifacts(self) -> InferenceArtifacts:
-        base_dir = Path(__file__).resolve().parent
-        artifact_dir = base_dir / "model"
+    def _load_artifacts(self, artifact_dir: str | None) -> InferenceArtifacts:
+        base_dir = Path(__file__).resolve().parent          # backend/
+        project_root = base_dir.parent                      # FINAL YEAR PROJECT/
+        out_dir = Path(artifact_dir) if artifact_dir else (project_root / "outputs_dl")
 
-        vectorizer_path = artifact_dir / "vectorizer.joblib"
-        mask_path = artifact_dir / "feature_mask.npy"
-        svd_path = artifact_dir / "svd.joblib"
-        model_path = artifact_dir / "classifier.joblib"
+        pipeline_path = out_dir / "pipeline.pkl"
+        model_path = out_dir / "model.keras"
 
-        required_files = [vectorizer_path, mask_path, svd_path, model_path]
+        required_files = [pipeline_path, model_path]
         missing_files = [str(path) for path in required_files if not path.exists()]
         if missing_files:
             raise FileNotFoundError(
-                "Missing required model artifact(s): " + ", ".join(missing_files)
+                "Missing required artifact(s): " + ", ".join(missing_files)
             )
 
-        vectorizer = joblib.load(vectorizer_path)
-        feature_mask = np.load(mask_path, allow_pickle=False)
-        svd = joblib.load(svd_path)
-        model = joblib.load(model_path)
+        pipeline_obj = joblib.load(pipeline_path)
+
+        feature_pipeline = pipeline_obj.get("feature_pipeline")
+        l1_selector = pipeline_obj.get("l1_selector")
+        label_encoder = pipeline_obj.get("label_encoder")
+
+        if feature_pipeline is None or l1_selector is None:
+            raise ValueError("pipeline.pkl is missing required preprocessing objects.")
+
+        model = tf.keras.models.load_model(model_path)
 
         return InferenceArtifacts(
-            vectorizer=vectorizer,
-            feature_mask=feature_mask,
-            svd=svd,
+            feature_pipeline=feature_pipeline,
+            l1_selector=l1_selector,
+            label_encoder=label_encoder,
             model=model,
-            artifact_dir=artifact_dir,
+            artifact_dir=out_dir,
         )

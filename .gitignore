@@ -38,3 +38,5 @@ backend/baseline_results/
 
 # Optional: ignore training outputs (ONLY if not needed)
 backend/training_output.txt
+# Ignore the main dataset, reason: for hosting sake
+backend/spam_full.csv

@@ -28,9 +28,10 @@ function resetResultUI() {
 }
 
 function setResult(label, spamProb, confidence) {
-  const spamPct = Math.round(spamProb * 10000) / 100;
-  const confPct = typeof confidence === "number" ? confidence : spamPct;
   const isSpam = String(label).toLowerCase() === "spam";
+  const confPct = Number.isFinite(confidence)
+    ? confidence
+    : Math.round(spamProb * 10000) / 100;
 
   resultLine.innerHTML = `Result: <strong>${String(label).toUpperCase()}</strong> — ${confPct}% confidence`;
   resultLine.style.color = isSpam ? "#AB0B4B" : "#2ecc71";
@@ -42,7 +43,12 @@ async function fetchSample(type) {
   setError("");
   const targetBtn = type === "ham" ? btnHam : btnSpam;
 
-  setLoading(targetBtn, true, "Loading...", type === "ham" ? "Random HAM" : "Random SPAM");
+  setLoading(
+    targetBtn,
+    true,
+    "Loading...",
+    type === "ham" ? "Random HAM" : "Random SPAM"
+  );
 
   try {
     const res = await fetch(`${API_BASE}/sample?label=${type}`);
@@ -93,10 +99,11 @@ btnCheck.addEventListener("click", async () => {
       return;
     }
 
+    const label = data.label ?? data.prediction ?? "ham";
     const spamProbability = Number(data.spam_probability ?? data.probability ?? 0);
     const confidence = Number(data.confidence ?? 0);
 
-    setResult(data.label, spamProbability, confidence);
+    setResult(label, spamProbability, confidence);
   } catch (e) {
     setError("Backend not reachable.");
   } finally {
