@@ -237,7 +237,7 @@ def main() -> None:
     joblib.dump(artifact, output_dir / "pipeline.pkl")
 
     # save deep learning model only
-    model.save(output_dir / "model.keras")
+    model = tf.keras.models.load_model(model_path, compile=False)
 
     print("=== Training Complete ===")
     print("Model backend: tensorflow")
