@@ -62,7 +62,6 @@ def build_feature_pipeline(max_features: int, chi2_k: int) -> Pipeline:
 
 
 def build_l1_selector(c: float, random_state: int) -> SelectFromModel:
-    # L1 logistic regression used only for embedded feature selection
     estimator = LogisticRegression(
         penalty="l1",
         solver="liblinear",
@@ -179,7 +178,6 @@ def main() -> None:
     x_train_selected = l1_selector.fit_transform(x_train_chi2, y_train)
     x_test_selected = l1_selector.transform(x_test_chi2)
 
-    # safety fallback if very few features survive
     if x_train_selected.shape[1] == 0:
         raise ValueError("L1 feature selection removed all features. Increase --l1_c.")
     if x_train_selected.shape[1] == 1:
@@ -228,7 +226,6 @@ def main() -> None:
 
     np.save(output_dir / "confusion_matrix.npy", cm)
 
-    # save preprocessing + feature selection objects
     artifact = {
         "feature_pipeline": feature_pipeline,
         "l1_selector": l1_selector,
@@ -236,8 +233,8 @@ def main() -> None:
     }
     joblib.dump(artifact, output_dir / "pipeline.pkl")
 
-    # save deep learning model only
-    model = tf.keras.models.load_model(model_path, compile=False)
+    # save weights only to avoid Keras deserialization mismatch on Railway
+    model.save_weights(output_dir / "model.weights.h5")
 
     print("=== Training Complete ===")
     print("Model backend: tensorflow")
