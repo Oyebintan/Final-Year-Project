@@ -1,12 +1,12 @@
 const API_BASE = "https://final-year-project-production-0aa4.up.railway.app";
 
 const emailText = document.getElementById("emailText");
-const btnCheck = document.getElementById("btnCheck");
-const btnHam = document.getElementById("btnHam");
-const btnSpam = document.getElementById("btnSpam");
+const btnCheck  = document.getElementById("btnCheck");
+const btnHam    = document.getElementById("btnHam");
+const btnSpam   = document.getElementById("btnSpam");
 const resultLine = document.getElementById("resultLine");
-const confBar = document.getElementById("confBar");
-const errBox = document.getElementById("errBox");
+const confBar   = document.getElementById("confBar");
+const errBox    = document.getElementById("errBox");
 
 function setError(msg = "") {
   errBox.textContent = msg;
@@ -39,16 +39,16 @@ function setResult(label, spamProb, confidence) {
 async function fetchSample(type) {
   setError("");
   const targetBtn = type === "ham" ? btnHam : btnSpam;
+  const normalText = type === "ham" ? "Random HAM" : "Random SPAM";
 
-  setLoading(
-    targetBtn,
-    true,
-    "Loading...",
-    type === "ham" ? "Random HAM" : "Random SPAM"
-  );
+  setLoading(targetBtn, true, "Loading... (may take a moment)", normalText);
+
+  const wakeupTimer = setTimeout(() => {
+    setError("⏳ Server is waking up, please wait...");
+  }, 5000);
 
   try {
-    const res = await fetch(`${API_BASE}/sample?label=${type}`);
+    const res  = await fetch(`${API_BASE}/sample?label=${type}`);
     const data = await res.json();
 
     if (!res.ok) {
@@ -58,15 +58,17 @@ async function fetchSample(type) {
 
     emailText.value = data.text || "";
     resetResultUI();
+    setError("");
   } catch (e) {
-    setError("Backend not reachable.");
+    setError("Backend not reachable. Please try again.");
   } finally {
-    setLoading(btnHam, false, "", "Random HAM");
+    clearTimeout(wakeupTimer);
+    setLoading(btnHam,  false, "", "Random HAM");
     setLoading(btnSpam, false, "", "Random SPAM");
   }
 }
 
-btnHam.addEventListener("click", () => fetchSample("ham"));
+btnHam.addEventListener("click",  () => fetchSample("ham"));
 btnSpam.addEventListener("click", () => fetchSample("spam"));
 
 btnCheck.addEventListener("click", async () => {
@@ -78,15 +80,17 @@ btnCheck.addEventListener("click", async () => {
     return;
   }
 
-  setLoading(btnCheck, true, "Checking...", "Check");
+  setLoading(btnCheck, true, "Checking... (may take a moment)", "Check");
+
+  const wakeupTimer = setTimeout(() => {
+    setError("⏳ Server is waking up, please wait...");
+  }, 5000);
 
   try {
     const res = await fetch(`${API_BASE}/predict`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ text })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
     });
 
     const data = await res.json();
@@ -96,14 +100,16 @@ btnCheck.addEventListener("click", async () => {
       return;
     }
 
-    const label = data.label ?? data.prediction ?? "ham";
+    const label           = data.label ?? data.prediction ?? "ham";
     const spamProbability = Number(data.spam_probability ?? data.probability ?? 0);
-    const confidence = Number(data.confidence ?? 0);
+    const confidence      = Number(data.confidence ?? 0);
 
+    setError("");
     setResult(label, spamProbability, confidence);
   } catch (e) {
-    setError("Backend not reachable.");
+    setError("Backend not reachable. Please try again.");
   } finally {
+    clearTimeout(wakeupTimer);
     setLoading(btnCheck, false, "", "Check");
   }
 });

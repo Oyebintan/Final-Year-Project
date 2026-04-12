@@ -18,7 +18,13 @@ CORS(app)
 BASE_DIR = Path(__file__).resolve().parent
 DATA_PATH = BASE_DIR / "spam.csv"
 
-_predictor = None
+# Preload model at startup
+try:
+    _predictor = SpamPredictor()
+    print("✅ Model loaded successfully")
+except Exception as e:
+    _predictor = None
+    print(f"❌ Model failed to load: {e}")
 
 
 def get_predictor() -> SpamPredictor:
@@ -66,14 +72,7 @@ def home():
 @app.get("/health")
 def health():
     try:
-        predictor_ready = False
-
-        try:
-            get_predictor()
-            predictor_ready = True
-        except Exception:
-            predictor_ready = False
-
+        predictor_ready = _predictor is not None
         return jsonify(
             {
                 "status": "ok",
@@ -90,8 +89,6 @@ def health():
 def predict():
     try:
         payload = request.get_json(silent=True) or {}
-
-        # accept either "text" or "email"
         text = str(payload.get("text") or payload.get("email") or "").strip()
 
         if not text:
@@ -105,9 +102,9 @@ def predict():
 
         return jsonify(
             {
-                "prediction": label,           # frontend-friendly
-                "label": label,                # backend-friendly
-                "probability": probability,    # probability of spam
+                "prediction": label,
+                "label": label,
+                "probability": probability,
                 "spam_probability": probability,
                 "ham_probability": round(1.0 - probability, 6),
                 "confidence": confidence,
