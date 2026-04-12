@@ -33,7 +33,6 @@ class SpamPredictor:
                 "confidence": 0.0,
             }
 
-        # same preprocessing pipeline used during training
         x = self.art.feature_pipeline.transform([text])
 
         if hasattr(x, "toarray"):
@@ -63,14 +62,13 @@ class SpamPredictor:
 
     def _load_artifacts(self, artifact_dir: str | None) -> InferenceArtifacts:
         base_dir = Path(__file__).resolve().parent          # backend/
-        project_root = base_dir.parent                      # FINAL YEAR PROJECT/
+        project_root = base_dir.parent                      # project root
         out_dir = Path(artifact_dir) if artifact_dir else (project_root / "outputs_dl")
 
         pipeline_path = out_dir / "pipeline.pkl"
-        model_path = "outputs_dl/model.h5"
+        model_path = out_dir / "model.h5"
 
-        required_files = [pipeline_path, model_path]
-        missing_files = [str(path) for path in required_files if not path.exists()]
+        missing_files = [str(p) for p in [pipeline_path, model_path] if not p.exists()]
         if missing_files:
             raise FileNotFoundError(
                 "Missing required artifact(s): " + ", ".join(missing_files)
@@ -85,7 +83,7 @@ class SpamPredictor:
         if feature_pipeline is None or l1_selector is None:
             raise ValueError("pipeline.pkl is missing required preprocessing objects.")
 
-        model = tf.keras.models.load_model(model_path)
+        model = tf.keras.models.load_model(str(model_path))
 
         return InferenceArtifacts(
             feature_pipeline=feature_pipeline,
