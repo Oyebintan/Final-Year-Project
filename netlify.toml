@@ -1,7 +1,3 @@
 [build]
   publish = "frontend"
   command = "echo done"
-
-[build.environment]
-  PYTHON_VERSION = "skip"
-  PIP_NO_INSTALL = "1"
