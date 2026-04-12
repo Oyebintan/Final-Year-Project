@@ -1,4 +1,7 @@
-const API_BASE = "https://final-year-project-production-0aa4.up.railway.app";
+const API_BASE =
+  window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost"
+    ? "http://127.0.0.1:8000"
+    : "https://final-year-project-production-0aa4.up.railway.app/";
 
 const emailText = document.getElementById("emailText");
 const btnCheck  = document.getElementById("btnCheck");

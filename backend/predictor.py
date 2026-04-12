@@ -89,7 +89,7 @@ class SpamPredictor:
         if feature_pipeline is None or l1_selector is None:
             raise ValueError("pipeline.pkl is missing required preprocessing objects.")
 
-        model = tf.keras.models.load_model(str(model_path))
+        model = tf.keras.models.load_model(model_path, compile=False)
 
         return InferenceArtifacts(
             feature_pipeline=feature_pipeline,
