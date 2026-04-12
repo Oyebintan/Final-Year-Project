@@ -1,7 +1,4 @@
-const API_BASE =
-  window.location.protocol === "file:"
-    ? "http://127.0.0.1:8000"
-    : `${window.location.origin}`;
+const API_BASE = "https://final-year-project-production-0aa4.up.railway.app";
 
 const emailText = document.getElementById("emailText");
 const btnCheck = document.getElementById("btnCheck");
