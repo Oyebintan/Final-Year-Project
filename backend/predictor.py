@@ -67,7 +67,7 @@ class SpamPredictor:
         out_dir = Path(artifact_dir) if artifact_dir else (project_root / "outputs_dl")
 
         pipeline_path = out_dir / "pipeline.pkl"
-        model_path = out_dir / "model.keras"
+        model_path = "outputs_dl/model.h5"
 
         required_files = [pipeline_path, model_path]
         missing_files = [str(path) for path in required_files if not path.exists()]
