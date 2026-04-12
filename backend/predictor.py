@@ -45,6 +45,12 @@ class SpamPredictor:
         proba_spam = float(self.art.model.predict(x_selected, verbose=0).ravel()[0])
         proba_spam = max(0.0, min(1.0, proba_spam))
 
+        # Temperature scaling to reduce overconfidence
+        temperature = 2.5
+        logit = np.log(proba_spam / (1 - proba_spam + 1e-10))
+        proba_spam = float(1 / (1 + np.exp(-logit / temperature)))
+        proba_spam = max(0.0, min(1.0, proba_spam))
+
         label = "spam" if proba_spam >= 0.5 else "ham"
         confidence = proba_spam if label == "spam" else (1.0 - proba_spam)
 
@@ -61,8 +67,8 @@ class SpamPredictor:
         return text
 
     def _load_artifacts(self, artifact_dir: str | None) -> InferenceArtifacts:
-        base_dir = Path(__file__).resolve().parent          # backend/
-        project_root = base_dir.parent                      # project root
+        base_dir = Path(__file__).resolve().parent
+        project_root = base_dir.parent
         out_dir = Path(artifact_dir) if artifact_dir else (project_root / "outputs_dl")
 
         pipeline_path = out_dir / "pipeline.pkl"
