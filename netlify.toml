@@ -1,7 +1,3 @@
 [build]
   publish = "frontend"
-  command = ""
-  ignore = "exit 0"
-
-[build.environment]
-  PYTHON_VERSION = ""
+  command = "echo done"
