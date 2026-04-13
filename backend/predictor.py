@@ -7,7 +7,6 @@ from typing import Any, Dict
 
 import joblib
 import numpy as np
-import tensorflow as tf
 
 
 @dataclass
@@ -15,22 +14,8 @@ class InferenceArtifacts:
     feature_pipeline: Any
     l1_selector: Any
     label_encoder: Any
-    model: tf.keras.Model
+    classifier: Any
     artifact_dir: Path
-
-
-def build_deep_model(input_dim: int) -> tf.keras.Model:
-    model = tf.keras.Sequential([
-        tf.keras.layers.Input(shape=(input_dim,)),
-        tf.keras.layers.Dense(256, activation="relu"),
-        tf.keras.layers.Dropout(0.3),
-        tf.keras.layers.Dense(128, activation="relu"),
-        tf.keras.layers.Dropout(0.3),
-        tf.keras.layers.Dense(64, activation="relu"),
-        tf.keras.layers.Dropout(0.3),
-        tf.keras.layers.Dense(1, activation="sigmoid"),
-    ])
-    return model
 
 
 class SpamPredictor:
@@ -41,11 +26,7 @@ class SpamPredictor:
         text = self._normalize_input(text)
 
         if not text:
-            return {
-                "label": "ham",
-                "probability": 0.0,
-                "confidence": 0.0,
-            }
+            return {"label": "ham", "probability": 0.0, "confidence": 0.0}
 
         x = self.art.feature_pipeline.transform([text])
 
@@ -56,7 +37,12 @@ class SpamPredictor:
 
         x_selected = self.art.l1_selector.transform(x).astype(np.float32)
 
-        proba_spam = float(self.art.model.predict(x_selected, verbose=0).ravel()[0])
+        proba_spam = float(self.art.classifier.predict_proba(x_selected)[0][1])
+        proba_spam = max(0.0, min(1.0, proba_spam))
+
+        temperature = 2.5
+        logit = np.log(proba_spam / (1 - proba_spam + 1e-10))
+        proba_spam = float(1 / (1 + np.exp(-logit / temperature)))
         proba_spam = max(0.0, min(1.0, proba_spam))
 
         label = "spam" if proba_spam >= 0.5 else "ham"
@@ -80,40 +66,27 @@ class SpamPredictor:
         out_dir = Path(artifact_dir) if artifact_dir else (project_root / "outputs_dl")
 
         pipeline_path = out_dir / "pipeline.pkl"
-        weights_path = out_dir / "model.weights.h5"
 
-        required_files = [pipeline_path, weights_path]
-        missing_files = [str(path) for path in required_files if not path.exists()]
-        if missing_files:
-            raise FileNotFoundError(
-                "Missing required artifact(s): " + ", ".join(missing_files)
-            )
+        if not pipeline_path.exists():
+            raise FileNotFoundError(f"Missing: {pipeline_path}")
 
         pipeline_obj = joblib.load(pipeline_path)
 
         feature_pipeline = pipeline_obj.get("feature_pipeline")
         l1_selector = pipeline_obj.get("l1_selector")
         label_encoder = pipeline_obj.get("label_encoder")
+        classifier = pipeline_obj.get("classifier")
 
         if feature_pipeline is None or l1_selector is None:
-            raise ValueError("pipeline.pkl is missing required preprocessing objects.")
+            raise ValueError("pipeline.pkl is missing required objects.")
 
-        dummy = feature_pipeline.transform(["test message"])
-        if hasattr(dummy, "toarray"):
-            dummy = dummy.toarray().astype(np.float32)
-        else:
-            dummy = np.asarray(dummy, dtype=np.float32)
-
-        dummy_selected = l1_selector.transform(dummy).astype(np.float32)
-        input_dim = dummy_selected.shape[1]
-
-        model = build_deep_model(input_dim)
-        model.load_weights(weights_path)
+        if classifier is None:
+            raise ValueError("No classifier found. Run retrain.py first.")
 
         return InferenceArtifacts(
             feature_pipeline=feature_pipeline,
             l1_selector=l1_selector,
             label_encoder=label_encoder,
-            model=model,
+            classifier=classifier,
             artifact_dir=out_dir,
         )
