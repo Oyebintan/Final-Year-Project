@@ -18,13 +18,14 @@ CORS(app)
 BASE_DIR = Path(__file__).resolve().parent
 DATA_PATH = BASE_DIR / "spam.csv"
 
-# Preload model at startup
-try:
-    _predictor = SpamPredictor()
-    print("✅ Model loaded successfully")
-except Exception as e:
-    _predictor = None
-    print(f"❌ Model failed to load: {e}")
+# Don't preload at startup — too heavy for free tier
+_predictor = None
+
+def get_predictor() -> SpamPredictor:
+    global _predictor
+    if _predictor is None:
+        _predictor = SpamPredictor()
+    return _predictor
 
 
 def get_predictor() -> SpamPredictor:
