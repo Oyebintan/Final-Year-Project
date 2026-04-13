@@ -1,7 +1,7 @@
 const API_BASE =
   window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost"
     ? "http://127.0.0.1:8000"
-    : "https://web-production-7ad1.up.railway.app/";
+    : "https://final-year-project-production-0aa4.up.railway.app/";
 
 const emailText = document.getElementById("emailText");
 const btnCheck  = document.getElementById("btnCheck");
