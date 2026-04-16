@@ -1,3 +1,9 @@
+Set-Content netlify.toml @"
 [build]
   publish = "frontend"
   command = "echo done"
+
+[build.environment]
+  PIP_NO_DEPS = "1"
+  PYTHON_VERSION = ""
+"@
