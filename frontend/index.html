@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -8,6 +8,8 @@
 </head>
 
 <body>
+  <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">🌙</button>
+
   <div class="wrap">
 
     <!-- HEADER -->
@@ -53,5 +55,22 @@
   </div>
 
   <script src="script.js"></script>
+  <script>
+    const toggleBtn = document.getElementById("themeToggle");
+    const root = document.documentElement;
+
+    // Load saved preference
+    const saved = localStorage.getItem("theme") || "dark";
+    root.setAttribute("data-theme", saved);
+    toggleBtn.textContent = saved === "dark" ? "🌙" : "☀️";
+
+    toggleBtn.addEventListener("click", () => {
+      const current = root.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      toggleBtn.textContent = next === "dark" ? "🌙" : "☀️";
+      localStorage.setItem("theme", next);
+    });
+  </script>
 </body>
 </html>
