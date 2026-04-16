@@ -1,4 +1,3 @@
-Set-Content netlify.toml @"
 [build]
   publish = "frontend"
   command = "echo done"
@@ -6,4 +5,3 @@ Set-Content netlify.toml @"
 [build.environment]
   PIP_NO_DEPS = "1"
   PYTHON_VERSION = ""
-"@
