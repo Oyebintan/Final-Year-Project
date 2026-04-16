@@ -40,7 +40,7 @@ class SpamPredictor:
         proba_spam = float(self.art.classifier.predict_proba(x_selected)[0][1])
         proba_spam = max(0.0, min(1.0, proba_spam))
 
-        temperature = 2.5
+        temperature = 4.5
         logit = np.log(proba_spam / (1 - proba_spam + 1e-10))
         proba_spam = float(1 / (1 + np.exp(-logit / temperature)))
         proba_spam = max(0.0, min(1.0, proba_spam))
