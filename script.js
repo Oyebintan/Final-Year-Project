@@ -1,7 +1,4 @@
-const API_BASE =
-  window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost"
-    ? "http://127.0.0.1:8000"
-    : "https://Lammyde-email-spam-classifier.hf.space";
+const API_BASE = "https://Lammyde-email-spam-classifier.hf.space";
 
 const emailText = document.getElementById("emailText");
 const btnCheck  = document.getElementById("btnCheck");
