@@ -18,6 +18,7 @@
   --bar-border:      #1e2b45;
   --err-color:       #ffb4b4;
   --toggle-bg:       #1e2b45;
+  --toggle-border:   #2e3f5c;
   --toggle-color:    #e7eefc;
   --metric-accent:   #4fffb0;
   --metric-accent-bg:#061a11;
@@ -45,6 +46,7 @@
   --bar-border:      #c5d3e8;
   --err-color:       #c0392b;
   --toggle-bg:       #e2e8f4;
+  --toggle-border:   #c5d3e8;
   --toggle-color:    #0b1120;
   --metric-accent:   #0d7a5f;
   --metric-accent-bg:#e4f5ef;
@@ -64,16 +66,41 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 
-/* ── Theme toggle ─────────────────────────────────────────────────────────── */
+/* ── Page wrapper ─────────────────────────────────────────────────────────── */
+.page {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 48px 52px;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.project-header { margin-bottom: 28px; }
+
+/* Title row: title on left, toggle on right — both on same line */
+.header-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;   /* center the title */
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.project-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+/* Toggle sits at the far right of the header row */
 .theme-toggle {
-  position: fixed;
-  top: 14px;
-  right: 20px;
-  z-index: 999;
+  position: absolute;
+  right: 0;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 1px solid var(--border);
+  border: 1px solid var(--toggle-border);
   background: var(--toggle-bg);
   color: var(--toggle-color);
   font-size: 17px;
@@ -81,51 +108,29 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   transition: background 0.3s, border 0.3s;
+  flex-shrink: 0;
 }
 .theme-toggle:hover { opacity: 0.85; }
 
-/* ── Page wrapper — full width with generous side padding ─────────────────── */
-.page {
-  width: 100%;
-  max-width: 1200px;       /* fills wider screens */
-  margin: 0 auto;
-  padding: 32px 48px 52px; /* 48px side padding on desktop */
-}
-
-/* ── Header ───────────────────────────────────────────────────────────────── */
-.project-header { margin-bottom: 28px; }
-
-.project-title {
-  text-align: center;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  margin-bottom: 14px;
-}
-
+/* Info box — single horizontal line */
 .info-box {
+  display: flex;
+  flex-wrap: wrap;             /* wraps gracefully on narrow screens */
+  justify-content: center;
+  align-items: center;
+  gap: 0 10px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--card-bg);
-  padding: 12px 20px;
-  max-width: 680px;
+  padding: 11px 20px;
+  max-width: 860px;
   margin: 0 auto;
+  font-size: 13px;
+  font-weight: 600;
   transition: background 0.3s, border 0.3s;
 }
 
-.info-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  flex-wrap: wrap;
-  margin-bottom: 5px;
-}
-.info-row:last-child { margin-bottom: 0; }
 .sep { color: var(--text-muted); }
 
 .header-divider {
@@ -137,9 +142,9 @@ body {
 /* ── Two-column grid ──────────────────────────────────────────────────────── */
 .main-grid {
   display: grid;
-  grid-template-columns: 1fr 1px 1fr;  /* equal columns, thin divider */
-  gap: 0 40px;                          /* 40px gutter each side of divider */
-  align-items: start;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: 0 40px;
+  align-items: stretch;        /* both cols same height */
   margin-top: 28px;
 }
 
@@ -147,6 +152,16 @@ body {
   background: var(--col-divider);
   align-self: stretch;
 }
+
+/* Both cols are flex columns so we can push things to the bottom */
+.col {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The spacer in the right col fills remaining vertical space,
+   making the metric result card bottom-align with the left col  */
+.col-spacer { flex: 1; }
 
 /* ── Section label ────────────────────────────────────────────────────────── */
 .section-label {
@@ -173,10 +188,7 @@ textarea {
   line-height: 1.65;
   transition: background 0.3s, color 0.3s, border 0.3s;
 }
-textarea:focus {
-  outline: none;
-  border-color: var(--btn-primary);
-}
+textarea:focus { outline: none; border-color: var(--btn-primary); }
 
 /* ── Buttons ──────────────────────────────────────────────────────────────── */
 .btn-stack { margin-top: 10px; }
@@ -252,7 +264,7 @@ button.secondary {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .metric-btn {
@@ -311,19 +323,31 @@ button.secondary {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Mobile  (≤ 640 px) ───────────────────────────────────────────────────── */
+/* ── Mobile (≤ 640px) ─────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
 
-  /* Proper breathing room on phone sides */
-  .page {
-    padding: 24px 20px 48px; /* 20px on each side — not too tight, not too wide */
+  .page { padding: 24px 20px 48px; }
+
+  /* Title stays centred; toggle moves below it as its own line */
+  .header-top-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* On mobile, toggle is no longer absolutely positioned —
+     it sits in normal flow below the title */
+  .theme-toggle {
+    position: static;
+    align-self: center;
   }
 
   .project-title { font-size: 17px; letter-spacing: 0.5px; }
 
-  .info-box { padding: 10px 14px; }
-
-  .info-row { font-size: 12px; gap: 8px; }
+  .info-box {
+    padding: 10px 14px;
+    font-size: 12px;
+    gap: 0 8px;
+  }
 
   /* Stack columns vertically */
   .main-grid {
@@ -331,13 +355,16 @@ button.secondary {
     gap: 0;
   }
 
-  /* Turn column divider into a horizontal rule */
+  /* Horizontal rule between columns on mobile */
   .col-divider {
     width: 100%;
     height: 1px;
     margin: 24px 0;
     align-self: auto;
   }
+
+  /* Spacer not needed in stacked layout */
+  .col-spacer { display: none; }
 
   textarea { height: 160px; }
 

@@ -8,25 +8,25 @@
 </head>
 <body>
 
-  <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">🌙</button>
-
   <div class="page">
 
     <!-- HEADER -->
     <div class="project-header">
-      <div class="project-title">FINAL YEAR PROJECT (CMP 499)</div>
-      <div class="info-box">
-        <div class="info-row">
-          <span>Olabisi Onabanjo University</span>
-          <span class="sep">|</span>
-          <span>Department of Computer Sciences</span>
-        </div>
-        <div class="info-row">
-          <span>Olabintan Yusuf Olatunji</span>
-          <span class="sep">|</span>
-          <span>SCI/22/23/0836</span>
-        </div>
+      <div class="header-top-row">
+        <div class="project-title">FINAL YEAR PROJECT (CMP 499)</div>
+        <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">🌙</button>
       </div>
+
+      <div class="info-box">
+        <span>Olabisi Onabanjo University</span>
+        <span class="sep">|</span>
+        <span>Department of Computer Sciences</span>
+        <span class="sep">|</span>
+        <span>Olabintan Yusuf Olatunji</span>
+        <span class="sep">|</span>
+        <span>SCI/22/23/0836</span>
+      </div>
+
       <div class="header-divider"></div>
     </div>
 
@@ -34,7 +34,7 @@
     <div class="main-grid">
 
       <!-- LEFT: Email + Prediction -->
-      <div class="col">
+      <div class="col left-col">
         <p class="section-label">Email Content</p>
         <textarea id="emailText" placeholder="Paste the email content here..."></textarea>
 
@@ -58,7 +58,7 @@
       <div class="col-divider"></div>
 
       <!-- RIGHT: Metrics -->
-      <div class="col">
+      <div class="col right-col">
         <p class="section-label">Model Evaluation Metrics</p>
 
         <div class="metric-grid">
@@ -69,6 +69,7 @@
           <button class="secondary metric-btn full" onclick="fetchMetric('roc_auc','ROC-AUC')">ROC-AUC</button>
         </div>
 
+        <!-- pushed to bottom by margin-top:auto -->
         <div class="metric-result" id="metricResult" style="display:none">
           <div class="metric-top">
             <span class="metric-name"  id="metricName">—</span>
@@ -76,6 +77,9 @@
           </div>
           <div class="metric-formula" id="metricFormula"></div>
         </div>
+
+        <!-- spacer fills remaining height so columns bottom-align -->
+        <div class="col-spacer"></div>
       </div>
 
     </div>
