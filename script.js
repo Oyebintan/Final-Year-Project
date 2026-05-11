@@ -30,7 +30,7 @@ function resetResultUI() {
 }
 
 function setResult(label, spamProb, confidence) {
-  const isSpam = String(label).toLowerCase() === "spam";
+  const isSpam  = String(label).toLowerCase() === "spam";
   const confPct = Number.isFinite(confidence)
     ? confidence
     : Math.round(spamProb * 10000) / 100;
@@ -100,9 +100,9 @@ btnCheck.addEventListener("click", async () => {
 
     if (!res.ok) { setError(data.error || "Prediction failed."); return; }
 
-    const label       = data.label ?? data.prediction ?? "ham";
-    const spamProb    = Number(data.spam_probability ?? data.probability ?? 0);
-    const confidence  = Number(data.confidence ?? 0);
+    const label      = data.label ?? data.prediction ?? "ham";
+    const spamProb   = Number(data.spam_probability ?? data.probability ?? 0);
+    const confidence = Number(data.confidence ?? 0);
 
     setError("");
     setResult(label, spamProb, confidence);
@@ -128,9 +128,9 @@ async function fetchMetric(metricKey, metricLabel) {
   const valueEl   = document.getElementById("metricValue");
   const formulaEl = document.getElementById("metricFormula");
 
-  box.style.display = "block";
-  nameEl.textContent  = metricLabel;
-  valueEl.textContent = "⏳";
+  box.style.display     = "block";
+  nameEl.textContent    = metricLabel;
+  valueEl.textContent   = "⏳";
   formulaEl.textContent = "";
 
   const allMetricBtns = document.querySelectorAll(".metric-btn");

@@ -1,6 +1,6 @@
-*, *::before, *::after { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── Theme variables ── */
+/* ── Theme variables ──────────────────────────────────────────────────────── */
 :root[data-theme="dark"] {
   --bg:              #0b0f17;
   --card-bg:         #111a2a;
@@ -15,16 +15,17 @@
   --btn-sec-border:  #243657;
   --btn-sec-text:    #e7eefc;
   --bar-track:       #0c1423;
+  --bar-border:      #1e2b45;
   --err-color:       #ffb4b4;
   --toggle-bg:       #1e2b45;
   --toggle-color:    #e7eefc;
-  --metric-bg:       #070d18;
-  --metric-border:   #1a2840;
   --metric-accent:   #4fffb0;
   --metric-accent-bg:#061a11;
-  --metric-formula:  rgba(79,255,176,0.35);
+  --metric-border:   #1a4030;
+  --metric-formula:  rgba(79,255,176,0.4);
   --col-divider:     #1e2b45;
   --result-bg:       #0c1423;
+  --result-border:   #1e2b45;
 }
 
 :root[data-theme="light"] {
@@ -41,34 +42,33 @@
   --btn-sec-border:  #c5d3e8;
   --btn-sec-text:    #0b1120;
   --bar-track:       #e2e8f4;
+  --bar-border:      #c5d3e8;
   --err-color:       #c0392b;
   --toggle-bg:       #e2e8f4;
   --toggle-color:    #0b1120;
-  --metric-bg:       #eef6f2;
-  --metric-border:   #b8ddd0;
   --metric-accent:   #0d7a5f;
   --metric-accent-bg:#e4f5ef;
+  --metric-border:   #b8ddd0;
   --metric-formula:  rgba(13,122,95,0.55);
   --col-divider:     #d0daea;
   --result-bg:       #f8faff;
+  --result-border:   #d0daea;
 }
 
-/* ── Base ── */
-*, *::before, *::after { margin: 0; padding: 0; }
-
+/* ── Base ─────────────────────────────────────────────────────────────────── */
 body {
   font-family: system-ui, Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
-  overflow-x: hidden;
+  min-height: 100vh;
   transition: background 0.3s, color 0.3s;
 }
 
-/* ── Theme toggle ── */
+/* ── Theme toggle ─────────────────────────────────────────────────────────── */
 .theme-toggle {
   position: fixed;
   top: 14px;
-  right: 16px;
+  right: 20px;
   z-index: 999;
   width: 40px;
   height: 40px;
@@ -81,35 +81,36 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   transition: background 0.3s, border 0.3s;
 }
 .theme-toggle:hover { opacity: 0.85; }
 
-/* ── Wrap ── */
-.wrap {
-  max-width: 900px;
+/* ── Page wrapper — full width with generous side padding ─────────────────── */
+.page {
+  width: 100%;
+  max-width: 1200px;       /* fills wider screens */
   margin: 0 auto;
-  padding: 28px 20px 40px;
+  padding: 32px 48px 52px; /* 48px side padding on desktop */
 }
 
-/* ── Header ── */
-.project-header { margin-bottom: 24px; }
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.project-header { margin-bottom: 28px; }
 
 .project-title {
   text-align: center;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
-  letter-spacing: 0.8px;
-  margin-bottom: 12px;
+  letter-spacing: 1px;
+  margin-bottom: 14px;
 }
 
 .info-box {
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--card-bg);
-  padding: 11px 18px;
-  max-width: 620px;
+  padding: 12px 20px;
+  max-width: 680px;
   margin: 0 auto;
   transition: background 0.3s, border 0.3s;
 }
@@ -118,75 +119,77 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  font-size: 13px;
+  gap: 12px;
+  font-size: 14px;
   font-weight: 600;
   flex-wrap: wrap;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 .info-row:last-child { margin-bottom: 0; }
-
 .sep { color: var(--text-muted); }
 
 .header-divider {
-  width: 100%;
   height: 1px;
   background: var(--text-muted);
-  margin: 16px auto 0;
+  margin-top: 18px;
 }
 
-/* ── Main two-column grid ── */
+/* ── Two-column grid ──────────────────────────────────────────────────────── */
 .main-grid {
   display: grid;
-  grid-template-columns: 1fr 1px 1fr;
-  gap: 0 24px;
+  grid-template-columns: 1fr 1px 1fr;  /* equal columns, thin divider */
+  gap: 0 40px;                          /* 40px gutter each side of divider */
   align-items: start;
+  margin-top: 28px;
 }
 
 .col-divider {
   background: var(--col-divider);
-  width: 1px;
   align-self: stretch;
 }
 
-/* ── Section label ── */
+/* ── Section label ────────────────────────────────────────────────────────── */
 .section-label {
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.3px;
   color: var(--label-color);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
-/* ── Textarea ── */
+/* ── Textarea ─────────────────────────────────────────────────────────────── */
 textarea {
   width: 100%;
-  height: 180px;
+  height: 190px;
   resize: vertical;
   background: var(--textarea-bg);
   color: var(--text);
   border: 1px solid var(--textarea-border);
   border-radius: 12px;
-  padding: 12px 14px;
+  padding: 13px 15px;
   font-size: 13px;
   font-family: inherit;
-  line-height: 1.6;
+  line-height: 1.65;
   transition: background 0.3s, color 0.3s, border 0.3s;
 }
-textarea:focus { outline: none; border-color: var(--btn-primary); }
+textarea:focus {
+  outline: none;
+  border-color: var(--btn-primary);
+}
 
-/* ── Button stack ── */
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
 .btn-stack { margin-top: 10px; }
 
 .btn-row {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   margin-top: 8px;
 }
 
 button {
-  padding: 10px 14px;
+  width: 100%;
+  padding: 11px 14px;
   border-radius: 10px;
   border: none;
   background: var(--btn-primary);
@@ -194,8 +197,7 @@ button {
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
-  transition: opacity 0.2s, background 0.3s;
-  width: 100%;
+  transition: opacity 0.2s, transform 0.1s, background 0.3s;
 }
 button:hover  { opacity: 0.88; }
 button:active { transform: scale(0.98); }
@@ -206,10 +208,10 @@ button.secondary {
   color: var(--btn-sec-text);
 }
 
-/* ── Result card ── */
+/* ── Result card ──────────────────────────────────────────────────────────── */
 .result-card {
   background: var(--result-bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--result-border);
   border-radius: 12px;
   padding: 14px 16px;
   margin-top: 12px;
@@ -219,13 +221,13 @@ button.secondary {
 .resultLine {
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .barWrap {
   height: 8px;
   background: var(--bar-track);
-  border: 1px solid var(--textarea-border);
+  border: 1px solid var(--bar-border);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -245,17 +247,17 @@ button.secondary {
   min-height: 16px;
 }
 
-/* ── Metric buttons grid ── */
+/* ── Metric buttons ───────────────────────────────────────────────────────── */
 .metric-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .metric-btn {
-  font-size: 12px;
-  padding: 10px 8px;
+  font-size: 13px;
+  padding: 11px 8px;
   text-align: center;
 }
 
@@ -266,13 +268,13 @@ button.secondary {
   color: var(--metric-accent) !important;
 }
 
-/* ── Metric result display ── */
+/* ── Metric result ────────────────────────────────────────────────────────── */
 .metric-result {
   background: var(--metric-accent-bg);
   border: 1px solid var(--metric-border);
   border-left: 3px solid var(--metric-accent);
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   animation: fadeIn 0.2s ease;
 }
 
@@ -284,13 +286,13 @@ button.secondary {
 }
 
 .metric-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text);
 }
 
 .metric-value {
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 800;
   color: var(--metric-accent);
   font-variant-numeric: tabular-nums;
@@ -299,39 +301,47 @@ button.secondary {
 .metric-formula {
   font-size: 11px;
   color: var(--metric-formula);
-  margin-top: 6px;
+  margin-top: 7px;
   font-style: italic;
 }
 
-/* ── Animations ── */
+/* ── Animation ────────────────────────────────────────────────────────────── */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Mobile ── */
-@media (max-width: 620px) {
-  .wrap { padding: 20px 14px 36px; }
+/* ── Mobile  (≤ 640 px) ───────────────────────────────────────────────────── */
+@media (max-width: 640px) {
 
-  .project-title { font-size: 16px; }
+  /* Proper breathing room on phone sides */
+  .page {
+    padding: 24px 20px 48px; /* 20px on each side — not too tight, not too wide */
+  }
 
-  .info-row { font-size: 12px; gap: 6px; }
+  .project-title { font-size: 17px; letter-spacing: 0.5px; }
 
   .info-box { padding: 10px 14px; }
 
+  .info-row { font-size: 12px; gap: 8px; }
+
+  /* Stack columns vertically */
   .main-grid {
     grid-template-columns: 1fr;
     gap: 0;
   }
 
+  /* Turn column divider into a horizontal rule */
   .col-divider {
     width: 100%;
     height: 1px;
-    margin: 20px 0;
+    margin: 24px 0;
     align-self: auto;
   }
 
-  button { font-size: 13px; }
+  textarea { height: 160px; }
 
-  .metric-value { font-size: 1.4rem; }
+  .metric-value { font-size: 1.6rem; }
+
+  .metric-top { flex-wrap: wrap; gap: 4px; }
 }
