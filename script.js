@@ -1,6 +1,6 @@
 const API_BASE =
   window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost"
-    ? "http://127.0.0.1:7860"
+    ? "http://127.0.0.1:8000"
     : "https://Lammyde-email-spam-classifier.hf.space";
 
 const emailText  = document.getElementById("emailText");
@@ -11,7 +11,7 @@ const resultLine = document.getElementById("resultLine");
 const confBar    = document.getElementById("confBar");
 const errBox     = document.getElementById("errBox");
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+/* ── Helpers ─────────────────────────────────────────────────────────────── */
 
 function setError(msg = "") {
   errBox.textContent = msg;
@@ -23,9 +23,9 @@ function setLoading(btn, isLoading, loadingText, normalText) {
 }
 
 function resetResultUI() {
-  resultLine.textContent      = "Result: —";
-  resultLine.style.color      = "#e7eefc";
-  confBar.style.width          = "0%";
+  resultLine.textContent        = "Result: —";
+  resultLine.style.color        = "";
+  confBar.style.width           = "0%";
   confBar.style.backgroundColor = "#AB0B4B";
 }
 
@@ -41,14 +41,14 @@ function setResult(label, spamProb, confidence) {
   confBar.style.width           = `${Math.max(0, Math.min(100, confPct))}%`;
 }
 
-// ── Random sample ─────────────────────────────────────────────────────────────
+/* ── Random sample ───────────────────────────────────────────────────────── */
 
 async function fetchSample(type) {
   setError("");
   const targetBtn  = type === "ham" ? btnHam : btnSpam;
   const normalText = type === "ham" ? "Random HAM" : "Random SPAM";
 
-  setLoading(targetBtn, true, "Loading... (may take a moment)", normalText);
+  setLoading(targetBtn, true, "Loading...", normalText);
 
   const wakeupTimer = setTimeout(() => {
     setError("⏳ Server is waking up, please wait...");
@@ -58,15 +58,12 @@ async function fetchSample(type) {
     const res  = await fetch(`${API_BASE}/sample?label=${type}`);
     const data = await res.json();
 
-    if (!res.ok) {
-      setError(data.error || "Failed to fetch sample.");
-      return;
-    }
+    if (!res.ok) { setError(data.error || "Failed to fetch sample."); return; }
 
     emailText.value = data.text || "";
     resetResultUI();
     setError("");
-  } catch (e) {
+  } catch {
     setError("Backend not reachable. Please try again.");
   } finally {
     clearTimeout(wakeupTimer);
@@ -78,25 +75,22 @@ async function fetchSample(type) {
 btnHam.addEventListener("click",  () => fetchSample("ham"));
 btnSpam.addEventListener("click", () => fetchSample("spam"));
 
-// ── Predict ───────────────────────────────────────────────────────────────────
+/* ── Predict ─────────────────────────────────────────────────────────────── */
 
 btnCheck.addEventListener("click", async () => {
   setError("");
   const text = (emailText.value || "").trim();
 
-  if (!text) {
-    setError("Paste an email first.");
-    return;
-  }
+  if (!text) { setError("Paste an email first."); return; }
 
-  setLoading(btnCheck, true, "Checking... (may take a moment)", "Check");
+  setLoading(btnCheck, true, "Checking...", "Check");
 
   const wakeupTimer = setTimeout(() => {
     setError("⏳ Server is waking up, please wait...");
   }, 5000);
 
   try {
-    const res = await fetch(`${API_BASE}/predict`, {
+    const res  = await fetch(`${API_BASE}/predict`, {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify({ text }),
@@ -104,18 +98,15 @@ btnCheck.addEventListener("click", async () => {
 
     const data = await res.json();
 
-    if (!res.ok) {
-      setError(data.error || "Prediction failed.");
-      return;
-    }
+    if (!res.ok) { setError(data.error || "Prediction failed."); return; }
 
-    const label           = data.label ?? data.prediction ?? "ham";
-    const spamProbability = Number(data.spam_probability ?? data.probability ?? 0);
-    const confidence      = Number(data.confidence ?? 0);
+    const label       = data.label ?? data.prediction ?? "ham";
+    const spamProb    = Number(data.spam_probability ?? data.probability ?? 0);
+    const confidence  = Number(data.confidence ?? 0);
 
     setError("");
-    setResult(label, spamProbability, confidence);
-  } catch (e) {
+    setResult(label, spamProb, confidence);
+  } catch {
     setError("Backend not reachable. Please try again.");
   } finally {
     clearTimeout(wakeupTimer);
@@ -123,51 +114,48 @@ btnCheck.addEventListener("click", async () => {
   }
 });
 
-// ── Evaluation Metrics ────────────────────────────────────────────────────────
-// Formulas per Chapter 3:
-//   Accuracy  : (TP + TN) / (TP + TN + FP + FN)
-//   Precision : TP / (TP + FP)
-//   Recall    : TP / (TP + FN)
-//   F1-Score  : 2 × (Precision × Recall) / (Precision + Recall)
-//   ROC-AUC   : Area under ROC curve across all classification thresholds
+/* ── Evaluation metrics ──────────────────────────────────────────────────── */
+/* Formulas per Chapter 3:
+   Accuracy  : (TP + TN) / (TP + TN + FP + FN)
+   Precision : TP / (TP + FP)
+   Recall    : TP / (TP + FN)
+   F1-Score  : 2 × (Precision × Recall) / (Precision + Recall)
+   ROC-AUC   : Area under ROC curve across all classification thresholds     */
 
 async function fetchMetric(metricKey, metricLabel) {
-  const resultBox  = document.getElementById("metricResult");
-  const nameEl     = document.getElementById("metricName");
-  const valueEl    = document.getElementById("metricValue");
-  const formulaEl  = document.getElementById("metricFormula");
+  const box       = document.getElementById("metricResult");
+  const nameEl    = document.getElementById("metricName");
+  const valueEl   = document.getElementById("metricValue");
+  const formulaEl = document.getElementById("metricFormula");
 
-  // Show loading state
-  resultBox.style.display  = "block";
-  nameEl.textContent       = metricLabel;
-  valueEl.textContent      = "⏳";
-  formulaEl.textContent    = "";
+  box.style.display = "block";
+  nameEl.textContent  = metricLabel;
+  valueEl.textContent = "⏳";
+  formulaEl.textContent = "";
 
-  // Disable all metric buttons while fetching
-  const metricBtns = document.querySelectorAll(".metric-btn");
-  metricBtns.forEach(b => b.disabled = true);
+  const allMetricBtns = document.querySelectorAll(".metric-btn");
+  allMetricBtns.forEach(b => (b.disabled = true));
 
   try {
     const res  = await fetch(`${API_BASE}/metrics/${metricKey}`);
     const data = await res.json();
 
     if (!res.ok || data.error) {
-      nameEl.textContent   = metricLabel;
-      valueEl.textContent  = "—";
+      nameEl.textContent    = metricLabel;
+      valueEl.textContent   = "—";
       formulaEl.textContent = data.error || "Could not retrieve metric.";
       return;
     }
 
-    // Display value as percentage
     nameEl.textContent    = data.metric;
     valueEl.textContent   = (data.value * 100).toFixed(2) + "%";
     formulaEl.textContent = "Formula: " + data.formula;
 
-  } catch (e) {
+  } catch {
     nameEl.textContent    = metricLabel;
     valueEl.textContent   = "—";
-    formulaEl.textContent = "Backend not reachable. Please try again.";
+    formulaEl.textContent = "Backend not reachable. Push the new app.py to Hugging Face first.";
   } finally {
-    metricBtns.forEach(b => b.disabled = false);
+    allMetricBtns.forEach(b => (b.disabled = false));
   }
 }

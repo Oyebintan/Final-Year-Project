@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Email Spam Classifier</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css"/>
 </head>
-
 <body>
+
   <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">🌙</button>
 
   <div class="wrap">
@@ -15,81 +15,81 @@
     <!-- HEADER -->
     <div class="project-header">
       <div class="project-title">FINAL YEAR PROJECT (CMP 499)</div>
-
       <div class="info-box">
         <div class="info-row">
           <span>Olabisi Onabanjo University</span>
-          <span class="separator">|</span>
+          <span class="sep">|</span>
           <span>Department of Computer Sciences</span>
         </div>
         <div class="info-row">
           <span>Olabintan Yusuf Olatunji</span>
-          <span class="separator">|</span>
+          <span class="sep">|</span>
           <span>SCI/22/23/0836</span>
         </div>
       </div>
-
-      <div class="divider"></div>
+      <div class="header-divider"></div>
     </div>
 
-    <!-- CARD -->
-    <div class="card">
-      <h1>Email Spam Classifier</h1>
+    <!-- MAIN GRID -->
+    <div class="main-grid">
 
-      <textarea id="emailText" placeholder="Paste the email content here..."></textarea>
+      <!-- LEFT: Email + Prediction -->
+      <div class="col">
+        <p class="section-label">Email Content</p>
+        <textarea id="emailText" placeholder="Paste the email content here..."></textarea>
 
-      <!-- Prediction buttons -->
-      <div class="row">
-        <button id="btnCheck">Check</button>
-        <button class="secondary" id="btnHam">Random HAM</button>
-        <button class="secondary" id="btnSpam">Random SPAM</button>
-      </div>
-
-      <div class="resultLine" id="resultLine">Result: —</div>
-      <div class="barWrap">
-        <div class="bar" id="confBar"></div>
-      </div>
-
-      <div class="err" id="errBox"></div>
-
-      <!-- Metric buttons -->
-      <div class="metric-section">
-        <div class="metric-label">Model Evaluation Metrics</div>
-        <div class="row metric-row">
-          <button class="secondary metric-btn" id="btnAccuracy"  onclick="fetchMetric('accuracy',  'Accuracy')">Accuracy</button>
-          <button class="secondary metric-btn" id="btnPrecision" onclick="fetchMetric('precision', 'Precision')">Precision</button>
-          <button class="secondary metric-btn" id="btnRecall"    onclick="fetchMetric('recall',    'Recall')">Recall</button>
-          <button class="secondary metric-btn" id="btnF1"        onclick="fetchMetric('f1',        'F1-Score')">F1-Score</button>
-          <button class="secondary metric-btn" id="btnRocAuc"    onclick="fetchMetric('roc_auc',   'ROC-AUC')">ROC-AUC</button>
-        </div>
-
-        <!-- Metric result display -->
-        <div class="metricResult" id="metricResult" style="display:none;">
-          <div class="metricResult-top">
-            <span class="metricResult-name"  id="metricName">—</span>
-            <span class="metricResult-value" id="metricValue">—</span>
+        <div class="btn-stack">
+          <button id="btnCheck">Check</button>
+          <div class="btn-row">
+            <button class="secondary" id="btnHam">Random HAM</button>
+            <button class="secondary" id="btnSpam">Random SPAM</button>
           </div>
-          <div class="metricResult-formula" id="metricFormula"></div>
+        </div>
+
+        <div class="result-card">
+          <p class="section-label" style="margin-bottom:6px">Prediction Result</p>
+          <div class="resultLine" id="resultLine">Result: —</div>
+          <div class="barWrap"><div class="bar" id="confBar"></div></div>
+          <div class="err" id="errBox"></div>
+        </div>
+      </div>
+
+      <!-- DIVIDER -->
+      <div class="col-divider"></div>
+
+      <!-- RIGHT: Metrics -->
+      <div class="col">
+        <p class="section-label">Model Evaluation Metrics</p>
+
+        <div class="metric-grid">
+          <button class="secondary metric-btn" onclick="fetchMetric('accuracy','Accuracy')">Accuracy</button>
+          <button class="secondary metric-btn" onclick="fetchMetric('precision','Precision')">Precision</button>
+          <button class="secondary metric-btn" onclick="fetchMetric('recall','Recall')">Recall</button>
+          <button class="secondary metric-btn" onclick="fetchMetric('f1','F1-Score')">F1-Score</button>
+          <button class="secondary metric-btn full" onclick="fetchMetric('roc_auc','ROC-AUC')">ROC-AUC</button>
+        </div>
+
+        <div class="metric-result" id="metricResult" style="display:none">
+          <div class="metric-top">
+            <span class="metric-name"  id="metricName">—</span>
+            <span class="metric-value" id="metricValue">—</span>
+          </div>
+          <div class="metric-formula" id="metricFormula"></div>
         </div>
       </div>
 
     </div>
-
   </div>
 
   <script src="script.js"></script>
   <script>
     const toggleBtn = document.getElementById("themeToggle");
     const root = document.documentElement;
-
-    // Load saved preference
     const saved = localStorage.getItem("theme") || "dark";
     root.setAttribute("data-theme", saved);
     toggleBtn.textContent = saved === "dark" ? "🌙" : "☀️";
-
     toggleBtn.addEventListener("click", () => {
-      const current = root.getAttribute("data-theme");
-      const next = current === "dark" ? "light" : "dark";
+      const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
       root.setAttribute("data-theme", next);
       toggleBtn.textContent = next === "dark" ? "🌙" : "☀️";
       localStorage.setItem("theme", next);
