@@ -38,6 +38,7 @@
 
       <textarea id="emailText" placeholder="Paste the email content here..."></textarea>
 
+      <!-- Prediction buttons -->
       <div class="row">
         <button id="btnCheck">Check</button>
         <button class="secondary" id="btnHam">Random HAM</button>
@@ -50,6 +51,28 @@
       </div>
 
       <div class="err" id="errBox"></div>
+
+      <!-- Metric buttons -->
+      <div class="metric-section">
+        <div class="metric-label">Model Evaluation Metrics</div>
+        <div class="row metric-row">
+          <button class="secondary metric-btn" id="btnAccuracy"  onclick="fetchMetric('accuracy',  'Accuracy')">Accuracy</button>
+          <button class="secondary metric-btn" id="btnPrecision" onclick="fetchMetric('precision', 'Precision')">Precision</button>
+          <button class="secondary metric-btn" id="btnRecall"    onclick="fetchMetric('recall',    'Recall')">Recall</button>
+          <button class="secondary metric-btn" id="btnF1"        onclick="fetchMetric('f1',        'F1-Score')">F1-Score</button>
+          <button class="secondary metric-btn" id="btnRocAuc"    onclick="fetchMetric('roc_auc',   'ROC-AUC')">ROC-AUC</button>
+        </div>
+
+        <!-- Metric result display -->
+        <div class="metricResult" id="metricResult" style="display:none;">
+          <div class="metricResult-top">
+            <span class="metricResult-name"  id="metricName">—</span>
+            <span class="metricResult-value" id="metricValue">—</span>
+          </div>
+          <div class="metricResult-formula" id="metricFormula"></div>
+        </div>
+      </div>
+
     </div>
 
   </div>

@@ -20,6 +20,10 @@
   --err-color:    #ffb4b4;
   --toggle-bg:    #1e2b45;
   --toggle-color: #e7eefc;
+  --metric-bg:    #0a0f1c;
+  --metric-border:#1a2840;
+  --metric-accent:#4fffb0;
+  --metric-label: rgba(231,238,252,0.35);
 }
 
 :root[data-theme="light"] {
@@ -38,6 +42,10 @@
   --err-color:    #c0392b;
   --toggle-bg:    #e2e8f4;
   --toggle-color: #0b1120;
+  --metric-bg:    #f0f5ff;
+  --metric-border:#c5d3e8;
+  --metric-accent:#1a7a5e;
+  --metric-label: rgba(11,17,32,0.4);
 }
 
 /* ===== BASE ===== */
@@ -225,6 +233,78 @@ button.secondary {
   min-height: 18px;
 }
 
+/* ===== METRIC SECTION ===== */
+
+.metric-section {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.metric-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--metric-label);
+  margin-bottom: 10px;
+}
+
+.metric-row {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.metric-btn {
+  flex: 1;
+  min-width: 90px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.metric-btn:hover {
+  border-color: var(--metric-accent);
+  color: var(--metric-accent);
+}
+
+/* Metric result display */
+.metricResult {
+  margin-top: 14px;
+  background: var(--metric-bg);
+  border: 1px solid var(--metric-border);
+  border-left: 4px solid var(--metric-accent);
+  border-radius: 12px;
+  padding: 16px 18px;
+  animation: fadeIn 0.2s ease both;
+}
+
+.metricResult-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.metricResult-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.metricResult-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--metric-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.metricResult-formula {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--metric-label);
+  font-style: italic;
+}
+
 /* ===== MOBILE ===== */
 
 @media (max-width: 600px) {
@@ -251,6 +331,16 @@ button.secondary {
 
   button {
     width: 100%;
+  }
+
+  .metricResult-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .metricResult-value {
+    font-size: 1.3rem;
   }
 }
 
