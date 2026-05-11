@@ -22,11 +22,12 @@
   --toggle-color:    #e7eefc;
   --metric-accent:   #4fffb0;
   --metric-accent-bg:#061a11;
-  --metric-border:   #1a4030;
+  --metric-accent-border: #1a4030;
   --metric-formula:  rgba(79,255,176,0.4);
   --col-divider:     #1e2b45;
   --result-bg:       #0c1423;
   --result-border:   #1e2b45;
+  --placeholder-color: rgba(231,238,252,0.18);
 }
 
 :root[data-theme="light"] {
@@ -50,11 +51,12 @@
   --toggle-color:    #0b1120;
   --metric-accent:   #0d7a5f;
   --metric-accent-bg:#e4f5ef;
-  --metric-border:   #b8ddd0;
+  --metric-accent-border: #b8ddd0;
   --metric-formula:  rgba(13,122,95,0.55);
   --col-divider:     #d0daea;
   --result-bg:       #f8faff;
   --result-border:   #d0daea;
+  --placeholder-color: rgba(11,17,32,0.2);
 }
 
 /* ── Base ─────────────────────────────────────────────────────────────────── */
@@ -65,6 +67,28 @@ body {
   min-height: 100vh;
   transition: background 0.3s, color 0.3s;
 }
+
+/* ── Toggle — fixed top-right on desktop ──────────────────────────────────── */
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  z-index: 999;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--toggle-border);
+  background: var(--toggle-bg);
+  color: var(--toggle-color);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: background 0.3s, border 0.3s;
+}
+.theme-toggle:hover { opacity: 0.85; }
 
 /* ── Page wrapper ─────────────────────────────────────────────────────────── */
 .page {
@@ -77,56 +101,28 @@ body {
 /* ── Header ───────────────────────────────────────────────────────────────── */
 .project-header { margin-bottom: 28px; }
 
-/* Title row: title on left, toggle on right — both on same line */
-.header-top-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;   /* center the title */
-  position: relative;
-  margin-bottom: 14px;
-}
-
 .project-title {
+  text-align: center;
   font-size: 22px;
   font-weight: 800;
   letter-spacing: 1px;
-  text-align: center;
+  margin-bottom: 16px;
 }
 
-/* Toggle sits at the far right of the header row */
-.theme-toggle {
-  position: absolute;
-  right: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1px solid var(--toggle-border);
-  background: var(--toggle-bg);
-  color: var(--toggle-color);
-  font-size: 17px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.3s, border 0.3s;
-  flex-shrink: 0;
-}
-.theme-toggle:hover { opacity: 0.85; }
-
-/* Info box — single horizontal line */
+/* Single-line info strip */
 .info-box {
   display: flex;
-  flex-wrap: wrap;             /* wraps gracefully on narrow screens */
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 0 10px;
+  gap: 0 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--card-bg);
-  padding: 11px 20px;
-  max-width: 860px;
+  padding: 12px 20px;
+  max-width: 900px;
   margin: 0 auto;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   transition: background 0.3s, border 0.3s;
 }
@@ -144,7 +140,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 1px 1fr;
   gap: 0 40px;
-  align-items: stretch;        /* both cols same height */
+  align-items: stretch;        /* both columns same height */
   margin-top: 28px;
 }
 
@@ -153,15 +149,18 @@ body {
   align-self: stretch;
 }
 
-/* Both cols are flex columns so we can push things to the bottom */
+/* Both columns use flex so we can control vertical space */
 .col {
   display: flex;
   flex-direction: column;
 }
 
-/* The spacer in the right col fills remaining vertical space,
-   making the metric result card bottom-align with the left col  */
-.col-spacer { flex: 1; }
+/* metric-result grows to fill remaining right-col height,
+   making its bottom edge align with result-card on the left */
+.right-col {
+  display: flex;
+  flex-direction: column;
+}
 
 /* ── Section label ────────────────────────────────────────────────────────── */
 .section-label {
@@ -220,7 +219,7 @@ button.secondary {
   color: var(--btn-sec-text);
 }
 
-/* ── Result card ──────────────────────────────────────────────────────────── */
+/* ── Result card (left column bottom) ────────────────────────────────────── */
 .result-card {
   background: var(--result-bg);
   border: 1px solid var(--result-border);
@@ -280,14 +279,38 @@ button.secondary {
   color: var(--metric-accent) !important;
 }
 
-/* ── Metric result ────────────────────────────────────────────────────────── */
+/* ── Metric result card (right column bottom) ─────────────────────────────── */
+/* flex: 1 makes this card fill ALL remaining height in the right column,
+   so its bottom edge lines up exactly with the result-card on the left     */
 .metric-result {
-  background: var(--metric-accent-bg);
-  border: 1px solid var(--metric-border);
-  border-left: 3px solid var(--metric-accent);
+  flex: 1;
+  background: var(--result-bg);
+  border: 1px solid var(--result-border);
   border-radius: 12px;
-  padding: 16px 18px;
-  animation: fadeIn 0.2s ease;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  transition: background 0.3s, border 0.3s;
+}
+
+/* When a metric has been fetched, switch to the accent style */
+.metric-result.has-value {
+  background: var(--metric-accent-bg);
+  border: 1px solid var(--metric-accent-border);
+  border-left: 3px solid var(--metric-accent);
+}
+
+.metric-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.placeholder-text {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--placeholder-color);
 }
 
 .metric-top {
@@ -313,7 +336,7 @@ button.secondary {
 .metric-formula {
   font-size: 11px;
   color: var(--metric-formula);
-  margin-top: 7px;
+  margin-top: 4px;
   font-style: italic;
 }
 
@@ -326,28 +349,18 @@ button.secondary {
 /* ── Mobile (≤ 640px) ─────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
 
-  .page { padding: 24px 20px 48px; }
-
-  /* Title stays centred; toggle moves below it as its own line */
-  .header-top-row {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  /* On mobile, toggle is no longer absolutely positioned —
-     it sits in normal flow below the title */
+  /* On mobile the fixed toggle overlaps content — move it into normal flow */
   .theme-toggle {
     position: static;
-    align-self: center;
+    display: flex;
+    margin: 0 auto 14px;
   }
+
+  .page { padding: 20px 20px 48px; }
 
   .project-title { font-size: 17px; letter-spacing: 0.5px; }
 
-  .info-box {
-    padding: 10px 14px;
-    font-size: 12px;
-    gap: 0 8px;
-  }
+  .info-box { padding: 10px 14px; font-size: 12px; gap: 0 8px; }
 
   /* Stack columns vertically */
   .main-grid {
@@ -355,7 +368,6 @@ button.secondary {
     gap: 0;
   }
 
-  /* Horizontal rule between columns on mobile */
   .col-divider {
     width: 100%;
     height: 1px;
@@ -363,12 +375,12 @@ button.secondary {
     align-self: auto;
   }
 
-  /* Spacer not needed in stacked layout */
-  .col-spacer { display: none; }
-
-  textarea { height: 160px; }
+  /* No flex stretch needed in stacked layout */
+  .metric-result {
+    flex: none;
+    margin-top: 12px;
+  }
 
   .metric-value { font-size: 1.6rem; }
-
-  .metric-top { flex-wrap: wrap; gap: 4px; }
+  .metric-top   { flex-wrap: wrap; gap: 4px; }
 }

@@ -123,15 +123,14 @@ btnCheck.addEventListener("click", async () => {
    ROC-AUC   : Area under ROC curve across all classification thresholds     */
 
 async function fetchMetric(metricKey, metricLabel) {
-  const box       = document.getElementById("metricResult");
-  const nameEl    = document.getElementById("metricName");
-  const valueEl   = document.getElementById("metricValue");
-  const formulaEl = document.getElementById("metricFormula");
+  const card      = document.getElementById("metricResult");
+  const labelEl   = document.getElementById("metricResultLabel");
+  const innerEl   = document.getElementById("metricInner");
 
-  box.style.display     = "block";
-  nameEl.textContent    = metricLabel;
-  valueEl.textContent   = "⏳";
-  formulaEl.textContent = "";
+  /* Loading state */
+  labelEl.textContent = metricLabel;
+  innerEl.innerHTML   = `<span class="placeholder-text">⏳ Loading...</span>`;
+  card.classList.remove("has-value");
 
   const allMetricBtns = document.querySelectorAll(".metric-btn");
   allMetricBtns.forEach(b => (b.disabled = true));
@@ -141,20 +140,23 @@ async function fetchMetric(metricKey, metricLabel) {
     const data = await res.json();
 
     if (!res.ok || data.error) {
-      nameEl.textContent    = metricLabel;
-      valueEl.textContent   = "—";
-      formulaEl.textContent = data.error || "Could not retrieve metric.";
+      innerEl.innerHTML = `<span class="placeholder-text">${data.error || "Could not retrieve metric."}</span>`;
       return;
     }
 
-    nameEl.textContent    = data.metric;
-    valueEl.textContent   = (data.value * 100).toFixed(2) + "%";
-    formulaEl.textContent = "Formula: " + data.formula;
+    /* Success — show value and formula */
+    card.classList.add("has-value");
+    labelEl.textContent = data.metric;
+    innerEl.innerHTML   = `
+      <div class="metric-top">
+        <span class="metric-name">${data.metric}</span>
+        <span class="metric-value">${(data.value * 100).toFixed(2)}%</span>
+      </div>
+      <div class="metric-formula">Formula: ${data.formula}</div>
+    `;
 
   } catch {
-    nameEl.textContent    = metricLabel;
-    valueEl.textContent   = "—";
-    formulaEl.textContent = "Backend not reachable. Push the new app.py to Hugging Face first.";
+    innerEl.innerHTML = `<span class="placeholder-text">Backend not reachable. Push the new app.py to Hugging Face first.</span>`;
   } finally {
     allMetricBtns.forEach(b => (b.disabled = false));
   }

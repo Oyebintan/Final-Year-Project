@@ -8,15 +8,16 @@
 </head>
 <body>
 
+  <!-- Toggle: fixed top-right on desktop, part of mobile header row -->
+  <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">🌙</button>
+
   <div class="page">
 
     <!-- HEADER -->
     <div class="project-header">
-      <div class="header-top-row">
-        <div class="project-title">FINAL YEAR PROJECT (CMP 499)</div>
-        <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">🌙</button>
-      </div>
+      <div class="project-title">FINAL YEAR PROJECT (CMP 499)</div>
 
+      <!-- Single-line info strip -->
       <div class="info-box">
         <span>Olabisi Onabanjo University</span>
         <span class="sep">|</span>
@@ -69,17 +70,13 @@
           <button class="secondary metric-btn full" onclick="fetchMetric('roc_auc','ROC-AUC')">ROC-AUC</button>
         </div>
 
-        <!-- pushed to bottom by margin-top:auto -->
-        <div class="metric-result" id="metricResult" style="display:none">
-          <div class="metric-top">
-            <span class="metric-name"  id="metricName">—</span>
-            <span class="metric-value" id="metricValue">—</span>
+        <!-- Stretches to fill remaining height — bottom aligns with result-card -->
+        <div class="metric-result" id="metricResult">
+          <p class="section-label" style="margin-bottom:6px" id="metricResultLabel">Metric Result</p>
+          <div class="metric-inner" id="metricInner">
+            <span class="placeholder-text">Click a metric button above to view its value</span>
           </div>
-          <div class="metric-formula" id="metricFormula"></div>
         </div>
-
-        <!-- spacer fills remaining height so columns bottom-align -->
-        <div class="col-spacer"></div>
       </div>
 
     </div>
